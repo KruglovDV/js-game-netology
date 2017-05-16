@@ -204,19 +204,23 @@ class Player extends Actor {
   constructor(location) {
     super(location, new Vector(0.8, 1.5));
     this._type = 'player';
+    this.pos.y -= 0.5;
   }
 }
 
 const schema = [
   '         ',
   '         ',
-  '    xx   ',
+  '         ',
   '         ',
   '     !xxx',
-  '         ',
+  ' @       ',
   'xxx!     ',
   '         '
 ];
-const parser = new LevelParser();
+const actorDict = {
+  '@': Player
+}
+const parser = new LevelParser(actorDict);
 const level = parser.parse(schema);
 runLevel(level, DOMDisplay);
