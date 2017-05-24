@@ -70,16 +70,24 @@ class Actor {
     if (actor.size.x < 0 || actor.size.y < 0) {
       return false;
     }
+
+
+      // actor === player!!!!
+
     if ( ((actor.top >= this.top && actor.top <= this.bottom) &&
           ((actor.left >= this.left && actor.left <= this.right) ||
           (actor.right >= this.left && actor.right <= this.right))) ||
          ((actor.bottom >= this.top && actor.bottom <= this.bottom) &&
           ((actor.left >= this.left && actor.left <= this.right) ||
-          (actor.right >= this.left && actor.right <= this.right)))) {
-      if ((actor.top === this.bottom) ||
-          (actor.bottom === this.top ) ||
-          (actor.left === this.right) ||
-          (actor.right === this.left) ) {
+          (actor.right >= this.left && actor.right <= this.right))) ||
+            (this.top > actor.top && this.bottom < actor.bottom && (this.left <= actor.right && this.right >= actor.right)) ||
+          (this.top > actor.top && this.bottom < actor.bottom && (this.right >= actor.left && this.left <= actor.left)) ||
+        (this.top > actor.top && this.bottom < actor.bottom && this.left >= actor.left && this.right <= actor.right))
+
+     {
+
+      if ((actor.top === this.bottom) || (actor.bottom === this.top ) ||
+          (actor.left === this.right) || (actor.right === this.left) ) {
         return false;
       }
      return true;
@@ -346,12 +354,12 @@ class Coin extends Actor {
 
 const schemas = [
   [
-    '      x x',
-    ' x   x | ',
-    '   =     ',
-    'x    xx x',
-    '  @   ooo',
-    'ooooo xxx',
+    '         ',
+    '       | ',
+    '         ',
+    '    =    ',
+    ' o@o ooo',
+    'oo oo xxx',
     'xxxxx    ',
     '         '
   ],
