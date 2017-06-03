@@ -60,45 +60,17 @@ class Actor {
   }
 
   isIntersect(actor) {
-    if (!(actor instanceof Actor) ||
-        actor === undefined) {
+    if (!(actor instanceof Actor) || actor === undefined) {
           throw Error('arguments error');
-        }
-    if (actor === this) {
+    }
+
+    if (actor === this || actor.size.x < 0 || actor.size.y < 0) {
       return false;
     }
-    if (actor.size.x < 0 || actor.size.y < 0) {
-      return false;
-    }
 
-
-      // actor === player!!!!
-
-    if ( ((actor.top >= this.top && actor.top <= this.bottom) &&
-          ((actor.left >= this.left && actor.left <= this.right) ||
-          (actor.right >= this.left && actor.right <= this.right))) ||
-         ((actor.bottom >= this.top && actor.bottom <= this.bottom) &&
-          ((actor.left >= this.left && actor.left <= this.right) ||
-          (actor.right >= this.left && actor.right <= this.right))) ||
-            (this.top > actor.top && this.bottom < actor.bottom && (this.left <= actor.right && this.right >= actor.right)) ||
-          (this.top > actor.top && this.bottom < actor.bottom && (this.right >= actor.left && this.left <= actor.left)) ||
-        (this.top > actor.top && this.bottom < actor.bottom && this.left >= actor.left && this.right <= actor.right))
-
-     {
-
-      if ((actor.top === this.bottom) || (actor.bottom === this.top ) ||
-          (actor.left === this.right) || (actor.right === this.left) ) {
-        return false;
-      }
-     return true;
-    }
-    return false;
+  return !(actor.left > this.right || actor.right < this.left || actor.top > this.bottom || actor.bottom < this.top);
   }
 }
-
-const isInteger = (num) => {
-  return num - Math.floor(num) !== 0 ? false : true;
-};
 
 class Level {
   constructor(grid = [], actors = []) {
@@ -119,68 +91,54 @@ class Level {
     if (!actor || !(actor instanceof Actor)) {
       throw Error('arguments error');
     }
-   return this.actors.find(el => el.isIntersect(actor));
+    return this.actors.find(el => el.isIntersect(actor));
+  }
+
+  isObstacle(x, y) {
+    const wall = 'wall';
+    const lava = 'lava';
+    const grid = this.grid;
+    return (grid[y] && grid[y][x] && ((grid[y][x] === wall) || (grid[y][x] === lava)));
   }
 
   obstacleAt(nextPos, size) {
-    if (!(nextPos instanceof Vector) || !(size instanceof Vector)) {
+    if (!(nextPos instanceof Vector) ||
+        !(size instanceof Vector)) {
       throw Error('arguments error');
     }
+    const sizeX = size.x - 0.0001;
+    const sizeY = size.y - 0.0001;
     const grid = this.grid;
     const x = nextPos.x;
     const y = nextPos.y;
     const left = Math.floor(x);
     const top = Math.floor(y);
-    const bottom = Math.floor(y + size.y);
-    const rigth = Math.floor(x + size.x);
-    const isPlaier = !isInteger(size.x);
+    const bottom = Math.floor(y + sizeY);
+    const rigth = Math.floor(x + sizeX);
+    const middle = Math.round(top + sizeY / 2);
 
-    if (isPlaier) {
-
-      if (grid[bottom] && grid[bottom][left] &&
-            (grid[bottom][left] === 'lava' || grid[bottom][left] === 'wall')) {
-              return grid[bottom][left];
-        }
-      if (grid[top] && grid[top][left] &&
-          (grid[top][left] === 'lava' || grid[top][left] === 'wall')) {
-            return grid[top][left];
-        }
-      if (grid[top] && grid[top][rigth] &&
-          (grid[top][rigth] === 'lava' || grid[top][rigth] === 'wall')) {
-            return grid[top][rigth];
-        }
-      if (grid[bottom] && grid[bottom][rigth] &&
-            (grid[bottom][rigth] === 'lava' || grid[bottom][rigth] === 'wall')) {
-              return grid[bottom][rigth];
-        }
-    } else {
-      if (isInteger(nextPos.x)) {
-        if (grid[top] && grid[top][left] &&
-           ((grid[top][left] === 'wall') || (grid[top][left] === 'lava'))) {
-          return grid[top][left];
-        }
-
-        if (grid[bottom] && grid[bottom][left] &&
-           ((grid[bottom][left] === 'wall') || (grid[bottom][left] === 'lava'))) {
-          return grid[bottom][x];
-        }
-      } else {
-        if (grid[top] && grid[top][left] &&
-           ((grid[top][left] === 'wall') || (grid[top][left] === 'lava'))) {
-          return grid[top][left];
-        }
-
-        if (grid[top] && grid[top][rigth] &&
-           ((grid[top][rigth] === 'wall') || (grid[top][rigth] === 'lava'))) {
-          return grid[top][rigth];
-        }
-      }
+    if (this.isObstacle(left, top)) {
+      return grid[top][left];
     }
-
-    if (left < 0 || nextPos.x + size.x > this.width || top < 0) {
+    if (this.isObstacle(rigth, top)) {
+      return grid[top][rigth];
+    }
+    if (this.isObstacle(left, bottom)) {
+        return grid[bottom][left];
+    }
+    if (this.isObstacle(rigth, bottom)) {
+        return grid[bottom][rigth];
+    }
+    if (this.isObstacle(left, middle)) {
+        return grid[middle][left];
+    }
+    if (this.isObstacle(rigth, middle)) {
+        return grid[middle][rigth];
+    }
+    if (left < 0 || x + sizeX > this.width || top < 0) {
       return 'wall';
     }
-    if (nextPos.y + size.y > this.height) {
+    if (y + sizeY > this.height) {
       return 'lava';
     }
   }
@@ -352,28 +310,6 @@ class Coin extends Actor {
   }
 }
 
-const schemas = [
-  [
-    '         ',
-    '       | ',
-    '         ',
-    '    =    ',
-    ' o@o ooo',
-    'oo oo xxx',
-    'xxxxx    ',
-    '         '
-  ],
-  [
-    '      v  ',
-    '         ',
-    '  v      ',
-    '        o',
-    '@       x',
-    '    x    ',
-    'x        ',
-    '         '
-  ]
-];
 const actorDict = {
   '@': Player,
   'v': FireRain,
@@ -381,6 +317,10 @@ const actorDict = {
   '|': VerticalFireball,
   'o': Coin
 }
+
 const parser = new LevelParser(actorDict);
-runGame(schemas, parser, DOMDisplay)
-  .then(() => alert('Вы выиграли приз!'));
+
+loadLevels()
+  .then(schemas => runGame(JSON.parse(schemas), parser, DOMDisplay))
+  .then(() => alert('Вы выиграли приз!'))
+  .catch(err => alert(err));
