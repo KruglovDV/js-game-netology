@@ -65,10 +65,10 @@ class Actor {
     }
 
     if (actor === this || actor.size.x < 0 || actor.size.y < 0) {
-      return false;
-    }
+          return false;
+      }
 
-  return !(actor.left > this.right || actor.right < this.left || actor.top > this.bottom || actor.bottom < this.top);
+  return !(actor.left >= this.right || actor.right <= this.left || actor.top >= this.bottom || actor.bottom <= this.top);
   }
 }
 
@@ -201,8 +201,11 @@ class LevelParser {
     const actors = [];
     mas.forEach((row, y) => {
       row.forEach((cell, x) => {
-        if (this.entities !== undefined && this.entities[cell] !== undefined) {
-          actors.push(new this.entities[cell](new Vector(x, y)));
+        if (this.entities && this.entities[cell] && typeof this.entities[cell] === 'function') {
+          const actor = new this.entities[cell] (new Vector(x, y));
+          if (actor instanceof Actor) {
+              actors.push(actor);
+          }
         }
       });
     });
